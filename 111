@@ -1,34 +1,23 @@
-package com.kalyantest.draw.drawingapp.service;
+package com.kalyantest.draw.drawingapp.entity.Commands;
 
-import java.util.Scanner;
-
-import org.springframework.stereotype.Service;
-import com.kalyantest.draw.drawingapp.entity.Commands.Command;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.Data;
+import org.springframework.stereotype.Component;
+import com.kalyantest.draw.drawingapp.entity.Point;
 import com.kalyantest.draw.drawingapp.business.DrawBL;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Service
-public class DrawService {
+@Data
+@Component
+public class B implements Command {
 
     @Autowired
-    DrawBL drawBL;
+    DrawBL utilities;
 
-    public Command readCommand()
-    {
-        System.out.println("enter command:");
-        String commandText = new Scanner(System.in).nextLine();
-        return drawBL.inputCommandInterpreter(commandText);
-    }
+    private Point point;
+    private char color;
 
-    public void draw(Command command)
-    {
-        if (command != null) {
-            command.executeCommand();
-            drawBL.printShape();
-        }
-        else
-        {
-            System.out.println("Invalid Command! Please try again.");
-        }
+    @Override
+    public void executeCommand() {
+        utilities.fillColor(point, color);
     }
 }
