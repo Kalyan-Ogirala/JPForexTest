@@ -1,30 +1,148 @@
-package com.kalyantest.draw.drawingapp.entity.Commands;
+package com.kalyantest.draw.drawingapp.business;
 
-import lombok.Data;
-import org.springframework.stereotype.Component;
+import java.util.*;
+import com.kalyantest.draw.drawingapp.entity.Commands.*;
 import com.kalyantest.draw.drawingapp.entity.Point;
-import com.kalyantest.draw.drawingapp.business.DrawBL;
+import com.kalyantest.draw.drawingapp.entity.Canvas;
+import org.reflections.Reflections;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import javax.annotation.PostConstruct;
+import static java.lang.Math.*;
 
-@Data
 @Component
-public class R implements Command {
+public class DrawBL {
 
     @Autowired
-    DrawBL utilities;
+    C c;
 
-    private Point p1;
-    private Point p2;
+    @Autowired
+    L l;
 
-    @Override
-    public void executeCommand() {
-        /*x.y, x.x   x.y, y.x
-        x.y, x.x   y.y  x.x
-        y.y  x.x   y.y  y.x
-        y.y  y.x   x.y  y.x      */
-        utilities.drawLine(new Point(p1.getY()-1, p1.getX()-1), new Point(p1.getY()-1, p2.getX()-1), 'x');
-        utilities.drawLine(new Point(p1.getY()-1, p1.getX()-1), new Point(p2.getY()-1, p1.getX()-1), 'x');
-        utilities.drawLine(new Point(p2.getY()-1, p1.getX()-1), new Point(p2.getY()-1, p2.getX()-1), 'x');
-        utilities.drawLine(new Point(p2.getY()-1, p2.getX()-1), new Point(p1.getY()-1, p2.getX()-1), 'x');
+    @Autowired
+    Q q;
+
+    @Autowired
+    R r;
+
+    @Autowired
+    B b;
+
+    @Autowired
+    Canvas canvas;
+
+    public static List<String> availableCommands = new ArrayList<>();
+
+    public Canvas drawLine(Point x, Point y, char character)
+    {
+         if (c != null && validateInput(canvas, x, y)) {
+             for (int i =  min(x.getX(), y.getX()); i <= max(x.getX(), y.getX()); i++) {
+                for (int j = min(x.getY(), y.getY()); j <= max(x.getY(), y.getY()); j++) {
+                    canvas.getShape()[i][j] = character;
+                }
+             }
+         }
+         return canvas;
+    }
+
+    public boolean validateInput(Canvas c, Point x, Point y)
+    {
+        if (c != null && x.getY() >= 0 && x.getY() >= 0 && x.getX() >= 0 && y.getY() >= 0) {
+            if(x.getX() <= c.getShape().length && y.getX() <= c.getShape().length)
+            {
+                if(x.getY() <= c.getShape()[0].length && y.getY() <= c.getShape()[0].length)
+                {
+                    return true;
+                }
+            }
+        }
+        return  false;
+    }
+
+    public Command inputCommandInterpreter(String commandText) throws ClassCastException, NumberFormatException, NullPointerException
+    {
+        try {
+        String[] commandSplit = commandText.trim().split("\\s+");
+
+        if (availableCommands.contains(commandSplit[0].toUpperCase())) {
+            switch (commandSplit[0].toUpperCase()) {
+                case "B":
+                    b.setPoint(new Point(Integer.valueOf(commandSplit[1]), Integer.valueOf(commandSplit[2])));
+                    b.setColor(commandSplit[3].charAt(0));
+                    return b;
+                case "C":
+                    c.setWidth(Integer.valueOf(commandSplit[1]));
+                    c.setHeight(Integer.valueOf(commandSplit[2]));
+                    c.setCanvas();
+                    return c;
+                case "L":
+                    l.setP1(new Point(Integer.valueOf(commandSplit[1]), Integer.valueOf(commandSplit[2])));
+                    l.setP2(new Point(Integer.valueOf(commandSplit[3]), Integer.valueOf(commandSplit[4])));
+                    return l;
+                case "Q":
+                    return q;
+                case "R":
+                    r.setP1(new Point(Integer.valueOf(commandSplit[1]), Integer.valueOf(commandSplit[2])));
+                    r.setP2(new Point(Integer.valueOf(commandSplit[3]), Integer.valueOf(commandSplit[4])));
+                    return r;
+            }
+        }
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+        return null;
+    }
+
+    public void fillColor(Point p, char color)
+    {
+        for (int i = p.getY(); i < (canvas.getShape().length); i++) {
+            for (int j = p.getX(); j < (canvas.getShape()[0].length); j++) {
+                if ("|-x".indexOf(canvas.getShape()[i][j]) == -1) {
+                    canvas.getShape()[i][j] = color;
+                } else break;
+            }
+
+            for (int j = p.getX(); j > 0; j--) {
+                if ("|-x".indexOf(canvas.getShape()[i][j]) == -1) {
+                    canvas.getShape()[i][j] = color;
+                } else break;
+            }
+        }
+
+        for (int i = p.getY(); i > 0; i--) {
+            for (int j = p.getX(); j < (canvas.getShape()[0].length); j++) {
+                if ("|-x".indexOf(canvas.getShape()[i][j]) == -1) {
+                    canvas.getShape()[i][j] = color;
+                } else break;
+            }
+
+            for (int j = p.getX(); j > 0; j--) {
+                if ("|-x".indexOf(canvas.getShape()[i][j]) == -1) {
+                    canvas.getShape()[i][j] = color;
+                } else break;
+            }
+        }
+    }
+
+    public void printShape()
+    {
+        for (int i = 0; i < canvas.getShape().length; i++) {
+            for (int j = 0; j < canvas.getShape()[0].length; j++) {
+                System.out.print(canvas.getShape()[i][j]);
+            }
+            System.out.println();
+        }
+    }
+
+    @PostConstruct
+    public void setAvailableCommands()
+    {
+        Reflections reflections = new Reflections("com.kalyantest.draw.drawingapp.entity.Commands");
+        Set<Class<? extends Command>> classes = reflections.getSubTypesOf(Command.class);
+        for (Class c : classes){
+           availableCommands.add(c.getSimpleName());
+        }
     }
 }
