@@ -2,12 +2,29 @@ package com.kalyantest.draw.drawingapp.entity.Commands;
 
 import lombok.Data;
 import org.springframework.stereotype.Component;
+import com.kalyantest.draw.drawingapp.entity.Point;
+import com.kalyantest.draw.drawingapp.business.DrawBL;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Data
 @Component
-public class Q implements Command {
+public class R implements Command {
+
+    @Autowired
+    DrawBL utilities;
+
+    private Point p1;
+    private Point p2;
+
     @Override
     public void executeCommand() {
-        System.exit(0);
+        /*x.y, x.x   x.y, y.x
+        x.y, x.x   y.y  x.x
+        y.y  x.x   y.y  y.x
+        y.y  y.x   x.y  y.x      */
+        utilities.drawLine(new Point(p1.getY()-1, p1.getX()-1), new Point(p1.getY()-1, p2.getX()-1), 'x');
+        utilities.drawLine(new Point(p1.getY()-1, p1.getX()-1), new Point(p2.getY()-1, p1.getX()-1), 'x');
+        utilities.drawLine(new Point(p2.getY()-1, p1.getX()-1), new Point(p2.getY()-1, p2.getX()-1), 'x');
+        utilities.drawLine(new Point(p2.getY()-1, p2.getX()-1), new Point(p1.getY()-1, p2.getX()-1), 'x');
     }
 }
