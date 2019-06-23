@@ -1,10 +1,136 @@
-package com.kalyantest.draw.drawingapp.entity;
+package com.kalyantest.draw.drawingapp.business;
 
-import lombok.Data;
-import org.springframework.stereotype.Component;
+import com.kalyantest.draw.drawingapp.entity.Commands.*;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+import com.kalyantest.draw.drawingapp.entity.Canvas;
+import com.kalyantest.draw.drawingapp.entity.Point;
+import com.kalyantest.draw.drawingapp.DrawingAppApplication;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@Data
-@Component
-public class Canvas {
-    private char[][] shape;
+import javax.annotation.PostConstruct;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
+@RunWith(SpringRunner.class)
+@ContextConfiguration(classes = DrawingAppApplication.class)
+public class DrawBLTest {
+    @Autowired
+    DrawBL drawBL;
+
+    @Autowired
+    Canvas canvas;
+
+    @Autowired
+    C c;
+
+    Canvas mockCanvas;
+    char[][] simpleLine;
+
+
+    @PostConstruct
+    public void Intialize()
+    {
+        canvas.setShape(new char[6][6]);
+        for (int i=0; i<=5; i++)
+            for (int j=0; j<5;j++)
+                canvas.getShape()[i][j] = ' ';
+
+        mockCanvas = mock(Canvas.class);
+
+        simpleLine = new char[][]{
+                {' ',' ',' ',' ',' ','\u0000'},
+                {' ',' ',' ',' ',' ','\u0000'},
+                {' ','x','x','x','x','x'},
+                {' ',' ',' ',' ',' ','\u0000'},
+                {' ',' ',' ',' ',' ','\u0000'},
+                {' ',' ',' ',' ',' ','\u0000'}
+        };
+    }
+
+    @Test
+    public void drawLine_CheckSimpleLine_PositiveCase()
+    {
+        Canvas actualResult = drawBL.drawLine(new Point(2,1), new Point(2,5), 'x');
+        when(mockCanvas.getShape()).thenReturn(simpleLine);
+        assertArrayEquals(mockCanvas.getShape(), actualResult.getShape());
+    }
+
+    @Test
+    public void validateInput_TwoPoints_PositiveCase()
+    {
+        assertTrue(drawBL.validateInput(canvas, new Point(2,3), new Point(4,5)));
+    }
+
+    @Test
+    public void validateInput_TwoPoints_NegativeCase()
+    {
+        assertFalse(drawBL.validateInput(canvas, new Point(2,3), new Point(8,5)));
+    }
+
+    @Test
+    public void validateInput_TwoPoints_BoundaryCase()
+    {
+        assertTrue(drawBL.validateInput(canvas, new Point(6,6), new Point(6,6)));
+    }
+
+    @Test
+    public void inputCommandInterpreter_Command_C_PositiveCase()
+    {
+        Command userCommand = drawBL.inputCommandInterpreter("C 20 10");
+        assertTrue(userCommand instanceof C);
+    }
+
+    @Test
+    public void inputCommandInterpreter_Command_L_PositiveCase()
+    {
+        Command userCommand = drawBL.inputCommandInterpreter("L 1 2 6 2");
+        assertTrue(userCommand instanceof L);
+    }
+
+    @Test
+    public void inputCommandInterpreter_Command_R_PositiveCase()
+    {
+        Command userCommand = drawBL.inputCommandInterpreter("R 14 1 18 13");
+        assertTrue(userCommand instanceof R);
+    }
+
+    @Test
+    public void inputCommandInterpreter_Command_B_PositiveCase()
+    {
+        Command userCommand = drawBL.inputCommandInterpreter("B 10 3 0");
+        assertTrue(userCommand instanceof B);
+    }
+
+    @Test
+    public void inputCommandInterpreter_Command_Q_PositiveCase()
+    {
+        Command userCommand = drawBL.inputCommandInterpreter("Q");
+        assertTrue(userCommand instanceof Q);
+    }
+
+    @Test
+    public void inputCommandInterpreter_InValidCommand_NegativeCase()
+    {
+        Command userCommand = drawBL.inputCommandInterpreter("K 1 2 3 5");
+        assertNull(userCommand);
+    }
+
+    @Test
+    public void printShape_TestShape_PositiveCase()
+    {
+        c.setWidth(6);
+        c.setHeight(1);
+        c.setCanvas();
+
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(outContent));
+        drawBL.printShape();
+        assertEquals("     \u0000" + System.lineSeparator(), outContent.toString());
+    }
 }
