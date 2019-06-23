@@ -1,23 +1,5 @@
 package com.kalyantest.draw.drawingapp.entity.Commands;
 
-import lombok.Data;
-import org.springframework.stereotype.Component;
-import com.kalyantest.draw.drawingapp.entity.Point;
-import com.kalyantest.draw.drawingapp.business.DrawBL;
-import org.springframework.beans.factory.annotation.Autowired;
-
-@Data
-@Component
-public class B implements Command {
-
-    @Autowired
-    DrawBL utilities;
-
-    private Point point;
-    private char color;
-
-    @Override
-    public void executeCommand() {
-        utilities.fillColor(point, color);
-    }
+public interface Command {
+    void  executeCommand();
 }
