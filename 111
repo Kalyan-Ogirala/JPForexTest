@@ -1,18 +1,34 @@
-package com.kalyantest.draw.drawingapp;
+package com.kalyantest.draw.drawingapp.service;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.context.ApplicationContext;
-import com.kalyantest.draw.drawingapp.service.DrawService;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import java.util.Scanner;
 
-@SpringBootApplication
-public class DrawingAppApplication {
+import org.springframework.stereotype.Service;
+import com.kalyantest.draw.drawingapp.entity.Commands.Command;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.kalyantest.draw.drawingapp.business.DrawBL;
 
-	public static void main(String[] args) {
-		ApplicationContext context =  SpringApplication.run(DrawingAppApplication.class, args);
-		DrawService service =  context.getBean(DrawService.class);
-		while(true){
-			service.draw(service.readCommand());
-		}
-	}
+@Service
+public class DrawService {
+
+    @Autowired
+    DrawBL drawBL;
+
+    public Command readCommand()
+    {
+        System.out.println("enter command:");
+        String commandText = new Scanner(System.in).nextLine();
+        return drawBL.inputCommandInterpreter(commandText);
+    }
+
+    public void draw(Command command)
+    {
+        if (command != null) {
+            command.executeCommand();
+            drawBL.printShape();
+        }
+        else
+        {
+            System.out.println("Invalid Command! Please try again.");
+        }
+    }
 }
