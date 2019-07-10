@@ -1,19 +1,38 @@
-import java.util.Scanner;
+import org.junit.*;
 import java.util.Optional;
 import com.kalyan.accumulator.service.CalculatorService;
 
-public class CalculatorApp {
-    public static void main(String[] args) throws Exception {
-        String inputText;
-        do {
-            System.out.print("Enter Text:");
-            inputText = new Scanner(System.in).nextLine();
-            Optional<Integer> result = CalculatorService.getCalculatorServiceInstance().add(inputText);
-            if (result.isPresent())
-                System.out.println("Sum: " + result.get());
-            else
-                System.out.println("Invalid input!");
-        }
-        while (!inputText.toUpperCase().equals("QUIT"));
+public class CalculatorServiceTest {
+
+    private CalculatorService service = CalculatorService.getCalculatorServiceInstance();
+
+    @Test
+    public void addTest_Empty_String(){
+        Assert.assertEquals(Optional.of(0), service.add(""));
+    }
+
+    @Test
+    public void addTest_String_With_Numbers(){
+        Assert.assertEquals(Optional.of(10), service.add("1,2,3,4"));
+    }
+
+    @Test
+    public void addTest_Invalid_String(){
+        Assert.assertFalse(service.add("1,\\n").isPresent());
+    }
+
+    @Test
+    public void addTest_String_With_NewLine(){
+        Assert.assertEquals(Optional.of(6), service.add("1\\n2,3"));
+    }
+
+    @Test
+    public void addTest_String_With_Delimiters_Length_1(){
+        Assert.assertEquals(Optional.of(6), service.add("//*|%\\n1*2%3"));
+    }
+
+    @Test
+    public void addTest_String_With_Delimiters_Length_MoreThan_1(){
+        Assert.assertEquals(Optional.of(20), service.add("//kalyan|%\\n5kalyan6%9"));
     }
 }
